@@ -57,6 +57,11 @@ const QuizManager = () => {
    const [inviteMode, setInviteMode] = useState<'DIRECT' | 'LINK'>('DIRECT');
    const [inviteEmails, setInviteEmails] = useState('');
 
+   // Student Search States
+   const [availableStudents, setAvailableStudents] = useState<{ id: string; full_name: string; email: string }[]>([]);
+   const [searchQuery, setSearchQuery] = useState('');
+   const [selectedStudents, setSelectedStudents] = useState<string[]>([]); // email list
+
    // Submission Detail
    const [selectedStudent, setSelectedStudent] = useState<{ name: string, email: string, id: string } | null>(null);
    const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(null);
@@ -91,6 +96,21 @@ const QuizManager = () => {
          loadInvites();
       }
    }, [activeTab, quiz?.id]);
+
+   // Load available students when modal opens
+   useEffect(() => {
+      if (showInviteModal && user) {
+         const loadStudents = async () => {
+            const students = await dbService.getTeacherStudents();
+            setAvailableStudents(students);
+         };
+         loadStudents();
+      } else {
+         // Reset when modal closes
+         setSearchQuery('');
+         setSelectedStudents([]);
+      }
+   }, [showInviteModal, user]);
 
    // --- Actions ---
    const handleSave = async () => {
@@ -131,14 +151,21 @@ const QuizManager = () => {
    };
 
    const handleInvite = async () => {
-      if (!quiz || !inviteEmails) return;
+      if (!quiz) return;
 
-      const emails = inviteEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e.includes('@'));
+      // Combine selected students + manual emails
+      const manualEmails = inviteEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e.includes('@'));
+      const allEmails = [...selectedStudents, ...manualEmails];
 
-      if (emails.length === 0) {
-         alert("Please enter valid email addresses separated by commas.");
+      // Remove duplicates
+      const uniqueEmails = [...new Set(allEmails)];
+
+      if (uniqueEmails.length === 0) {
+         alert("Please select students or enter email addresses.");
          return;
       }
+
+      const emails = uniqueEmails;
 
       const newInvites: QuizInvite[] = emails.map(email => ({
          id: generateUUID(),
@@ -840,26 +867,98 @@ const QuizManager = () => {
          {/* Invite Modal */}
          {showInviteModal && (
             <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
-               <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6">
-                  <div className="flex items-center justify-between mb-6">
+               <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[85vh]">
+                  <div className="flex items-center justify-between p-6 border-b border-slate-200">
                      <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2"><UserPlus className="text-primary-600" /> Invite Students</h3>
                      <button onClick={() => setShowInviteModal(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
                   </div>
-                  <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
-                     <button onClick={() => setInviteMode('DIRECT')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${inviteMode === 'DIRECT' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Email Invite</button>
+
+                  <div className="flex bg-slate-100 p-1 rounded-xl m-6 mb-4">
+                     <button onClick={() => setInviteMode('DIRECT')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${inviteMode === 'DIRECT' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Select Students</button>
                      <button onClick={() => setInviteMode('LINK')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${inviteMode === 'LINK' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Public Link</button>
                   </div>
 
                   {inviteMode === 'DIRECT' ? (
-                     <div className="space-y-4">
-                        <div>
-                           <label className="block text-sm font-bold text-slate-700 mb-2">Student Emails</label>
-                           <textarea value={inviteEmails} onChange={(e) => setInviteEmails(e.target.value)} className="w-full border border-slate-300 rounded-xl p-3 h-24 outline-none text-slate-900 bg-white" placeholder="email1@example.com, email2@example.com" />
+                     <div className="flex-1 overflow-hidden flex flex-col px-6">
+                        {/* Search Input */}
+                        <div className="mb-4">
+                           <input
+                              type="text"
+                              placeholder="🔍 Search by name or email..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className="w-full border border-slate-300 rounded-xl p-3 outline-none text-slate-900 bg-white focus:ring-2 focus:ring-primary-200"
+                           />
                         </div>
-                        <button onClick={handleInvite} className="w-full bg-primary-600 text-white py-3 rounded-xl font-bold hover:bg-primary-700 mt-2">Send Invites</button>
+
+                        {/* Student List (Scrollable) */}
+                        <div className="flex-1 overflow-y-auto border border-slate-200 rounded-xl bg-slate-50 mb-4">
+                           {availableStudents.length === 0 ? (
+                              <div className="p-8 text-center text-slate-500">
+                                 <Users size={48} className="mx-auto mb-2 text-slate-300" />
+                                 <p className="text-sm">No students found</p>
+                              </div>
+                           ) : (
+                              <div className="divide-y divide-slate-200">
+                                 {availableStudents
+                                    .filter(student =>
+                                       student.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                       student.email.toLowerCase().includes(searchQuery.toLowerCase())
+                                    )
+                                    .map(student => (
+                                       <label
+                                          key={student.email}
+                                          className="flex items-center gap-3 p-4 hover:bg-white cursor-pointer transition group"
+                                       >
+                                          <input
+                                             type="checkbox"
+                                             checked={selectedStudents.includes(student.email)}
+                                             onChange={(e) => {
+                                                if (e.target.checked) {
+                                                   setSelectedStudents([...selectedStudents, student.email]);
+                                                } else {
+                                                   setSelectedStudents(selectedStudents.filter(email => email !== student.email));
+                                                }
+                                             }}
+                                             className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 cursor-pointer"
+                                          />
+                                          <div className="flex-1">
+                                             <p className="font-bold text-slate-900 group-hover:text-primary-600 transition">{student.full_name}</p>
+                                             <p className="text-xs text-slate-500">{student.email}</p>
+                                          </div>
+                                       </label>
+                                    ))}
+                              </div>
+                           )}
+                        </div>
+
+                        {/* Manual Entry (Optional) */}
+                        <div className="border-t border-slate-200 pt-4 mb-4">
+                           <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Or enter emails manually:</label>
+                           <textarea
+                              value={inviteEmails}
+                              onChange={(e) => setInviteEmails(e.target.value)}
+                              className="w-full border border-slate-300 rounded-xl p-3 h-20 outline-none text-slate-900 bg-white text-sm focus:ring-2 focus:ring-primary-200"
+                              placeholder="email1@example.com, email2@example.com"
+                           />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-between items-center pb-6">
+                           <span className="text-sm text-slate-600">
+                              <strong>{selectedStudents.length}</strong> student{selectedStudents.length !== 1 ? 's' : ''} selected
+                           </span>
+                           <button
+                              onClick={handleInvite}
+                              disabled={selectedStudents.length === 0 && !inviteEmails.trim()}
+                              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                           >
+                              Invite {selectedStudents.length > 0 ? selectedStudents.length : ''} Student{selectedStudents.length !== 1 ? 's' : ''}
+                           </button>
+                        </div>
                      </div>
                   ) : (
-                     <div className="space-y-6 text-center">
+                     <div className="px-6 pb-6 space-y-6">
                         <div className="flex items-center gap-2">
                            <input readOnly value={`${window.location.href.split('#')[0]}#/share/${quiz.id}`} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-600" />
                            <button onClick={copyPublicLink} className="bg-slate-900 text-white p-3 rounded-xl"><Copy size={20} /></button>

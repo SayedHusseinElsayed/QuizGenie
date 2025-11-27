@@ -885,6 +885,31 @@ export const dbService = {
       console.error('Failed to update student details:', e);
       throw e;
     }
+  },
+
+  // --- TEACHER STUDENTS ---
+  getTeacherStudents: async (): Promise<{ id: string; full_name: string; email: string }[]> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return []; // Return empty in dev mode
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('role', 'STUDENT')
+        .order('full_name');
+
+      if (error) {
+        console.error('Error fetching students:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (e) {
+      console.error('Error in getTeacherStudents:', e);
+      return [];
+    }
   }
 };
 
