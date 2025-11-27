@@ -3,19 +3,19 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { UserRole, User } from '../types';
 
 export const authService = {
-  
+
   // Login
   login: async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
     if (!isSupabaseConfigured || !supabase) {
-       // Fallback for Dev Mode login check (Mock)
-       const storedUser = localStorage.getItem('qura_user');
-       if (storedUser) return { user: JSON.parse(storedUser), error: null };
-       
-       // Allow any login in Dev Mode for testing
-       return { 
-         user: { id: 'dev-1', email, full_name: 'Dev User', role: UserRole.TEACHER }, 
-         error: null 
-       };
+      // Fallback for Dev Mode login check (Mock)
+      const storedUser = localStorage.getItem('qura_user');
+      if (storedUser) return { user: JSON.parse(storedUser), error: null };
+
+      // Allow any login in Dev Mode for testing
+      return {
+        user: { id: 'dev-1', email, full_name: 'Dev User', role: UserRole.TEACHER },
+        error: null
+      };
     }
 
     try {
@@ -25,17 +25,17 @@ export const authService = {
       });
 
       if (error) return { user: null, error: error.message };
-      
+
       if (data.user) {
-         const { data: profile } = await supabase
-           .from('profiles')
-           .select('*')
-           .eq('id', data.user.id)
-           .single();
-           
-         if (profile) {
-            return { user: { ...profile }, error: null };
-         }
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profile) {
+          return { user: { ...profile }, error: null };
+        }
       }
       return { user: null, error: "User profile not found." };
     } catch (e: any) {
@@ -55,7 +55,10 @@ export const authService = {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, role: UserRole.TEACHER } }
+        options: {
+          data: { full_name: fullName, role: UserRole.TEACHER },
+          emailRedirectTo: window.location.origin + '/dashboard'
+        }
       });
 
       if (error) return { success: false, error: error.message };
@@ -72,7 +75,7 @@ export const authService = {
     try {
       // 1. Check invite
       const { data: isInvited, error: rpcError } = await supabase.rpc('check_is_invited', { email_input: email.toLowerCase().trim() });
-      
+
       if (rpcError) return { success: false, error: "Failed to verify invitation." };
       if (!isInvited) return { success: false, error: "This email has not been invited." };
 
@@ -80,7 +83,10 @@ export const authService = {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, role: UserRole.STUDENT } }
+        options: {
+          data: { full_name: fullName, role: UserRole.STUDENT },
+          emailRedirectTo: window.location.origin + '/dashboard'
+        }
       });
 
       if (error) return { success: false, error: error.message };
