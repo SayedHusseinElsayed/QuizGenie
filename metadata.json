@@ -1,0 +1,5 @@
+{
+  "name": "Qura (AI LMS)",
+  "description": "A bilingual (Arabic/English) AI-powered Learning Management System for creating quizzes and teaching guides using Gemini 3 and Supabase.",
+  "requestFramePermissions": []
+}
