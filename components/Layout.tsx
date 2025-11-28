@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useApp } from '../App';
-import { LayoutDashboard, PlusCircle, BookOpen, LogOut, GraduationCap, Globe, Menu, X, List, ChevronDown, Users } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, BookOpen, LogOut, GraduationCap, Globe, Menu, X, List, ChevronDown, Users, PlayCircle } from 'lucide-react';
 import { UserRole, Language } from '../types';
 import NotificationBell from './NotificationBell';
 
@@ -10,6 +10,7 @@ const Layout = () => {
   const { user, logout, language, setLanguage, t } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [showQuickGuide, setShowQuickGuide] = useState(false);
 
   const toggleLang = () => {
     setLanguage(language === Language.EN ? Language.AR : Language.EN);
@@ -115,26 +116,37 @@ const Layout = () => {
                       <span className="text-sm font-medium">{language === Language.AR ? 'العربية' : 'English'}</span>
                       <p className="text-xs text-slate-500">{user?.email}</p>
                     </div>
+                    {user?.role === UserRole.TEACHER && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            setShowQuickGuide(true);
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                        >
+                          <PlayCircle size={16} />
+                          <span>Quick Guide</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            window.location.hash = '#/support';
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-50"
+                        >
+                          <Users size={16} />
+                          <span>Support</span>
+                        </button>
+                      </>
+                    )}
                     <button
                       onClick={logout}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-50"
                     >
                       <LogOut size={16} />
                       <span>{language === Language.EN ? 'Logout' : 'تسجيل خروج'}</span>
                     </button>
-                    {user?.role === UserRole.TEACHER && (
-                      <button
-                        onClick={() => {
-                          setIsProfileOpen(false);
-                          // Navigate to support page
-                          window.location.hash = '#/support';
-                        }}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-50"
-                      >
-                        <Users size={16} />
-                        <span>Support</span>
-                      </button>
-                    )}
                   </div>
                 </>
               )}
@@ -150,9 +162,44 @@ const Layout = () => {
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/20 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/30 z-30 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
+      )}
+
+      {/* Quick Guide Video Modal */}
+      {showQuickGuide && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <PlayCircle className="text-primary-600" size={20} />
+                Quick Guide - How to Use QuizGenie
+              </h3>
+              <button
+                onClick={() => setShowQuickGuide(false)}
+                className="text-slate-400 hover:text-slate-600 transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="relative bg-black" style={{ paddingBottom: '56.25%' }}>
+              <video
+                className="absolute inset-0 w-full h-full"
+                controls
+                autoPlay
+                src="/Demo/sitedemo.mp4"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-200">
+              <p className="text-sm text-slate-600">
+                Watch this quick guide to learn how to create quizzes, invite students, and manage submissions.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
