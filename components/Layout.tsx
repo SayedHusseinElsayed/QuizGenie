@@ -188,7 +188,7 @@ const Layout = () => {
                 className="absolute inset-0 w-full h-full"
                 controls
                 autoPlay
-                src="/Demo/sitedemo.mp4"
+                src="/Demo/quickguide.mp4"
               >
                 Your browser does not support the video tag.
               </video>
