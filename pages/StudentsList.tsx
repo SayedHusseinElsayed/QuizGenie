@@ -1,9 +1,19 @@
-email: string;
-totalQuizzes: number;
-completedQuizzes: number;
-averageScore: number;
-lastActivity: Date;
-isPending ?: boolean;
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../App';
+import { dbService } from '../services/dbService';
+import { Submission, Quiz } from '../types';
+import { Users, Search, TrendingUp, TrendingDown, Mail, FileText, Award, ArrowRight, UserPlus, X, AlertTriangle } from 'lucide-react';
+
+interface StudentData {
+    id: string;
+    name: string;
+    email: string;
+    totalQuizzes: number;
+    completedQuizzes: number;
+    averageScore: number;
+    lastActivity: Date;
+    isPending?: boolean;
 }
 
 const StudentsList = () => {
@@ -101,37 +111,6 @@ const StudentsList = () => {
             setFormError(t.messages.error.add_student_failed);
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    const handleDeleteClick = (student: StudentData) => {
-        setStudentToDelete(student);
-        setShowDeleteModal(true);
-    };
-
-    const handleDeleteConfirm = async () => {
-        if (!studentToDelete) return;
-
-        setIsDeleting(true);
-        try {
-            await dbService.deleteStudent(studentToDelete.id);
-
-            // Remove from local state
-            setStudents(prev => prev.filter(s => s.id !== studentToDelete.id));
-
-            // Remove from localStorage if pending
-            const pendingStudents = JSON.parse(localStorage.getItem('pending_students') || '[]');
-            const updated = pendingStudents.filter((s: any) => s.email !== studentToDelete.email);
-            localStorage.setItem('pending_students', JSON.stringify(updated));
-
-            setShowDeleteModal(false);
-            setStudentToDelete(null);
-            alert('Student deleted successfully');
-        } catch (error) {
-            console.error('Error deleting student:', error);
-            alert('Failed to delete student. Please try again.');
-        } finally {
-            setIsDeleting(false);
         }
     };
 
