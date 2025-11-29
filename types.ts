@@ -1,6 +1,8 @@
 
 
+
 export enum UserRole {
+  OWNER = 'OWNER',
   TEACHER = 'TEACHER',
   STUDENT = 'STUDENT',
   ADMIN = 'ADMIN'
@@ -28,6 +30,11 @@ export interface User {
   parent_phone?: string;
   address?: string;
   notes?: string;
+  // Suspension fields
+  is_suspended?: boolean;
+  suspended_at?: string;
+  suspended_by?: string;
+  suspension_reason?: string;
 }
 
 export enum QuestionType {

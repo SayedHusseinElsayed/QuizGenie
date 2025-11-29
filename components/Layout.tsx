@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useApp } from '../App';
-import { LayoutDashboard, PlusCircle, BookOpen, LogOut, GraduationCap, Globe, Menu, X, List, ChevronDown, Users, PlayCircle } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, BookOpen, LogOut, GraduationCap, Globe, Menu, X, List, ChevronDown, Users, PlayCircle, Shield } from 'lucide-react';
 import { UserRole, Language } from '../types';
 import NotificationBell from './NotificationBell';
 
@@ -60,10 +60,16 @@ const Layout = () => {
 
             {user?.role === UserRole.TEACHER && (
               <>
-                <NavItem to="/create-quiz" icon={PlusCircle} label={t.dashboard.create_quiz} />
-                <NavItem to="/quizzes" icon={List} label={t.quizzes_list.title} />
-                <NavItem to="/students" icon={Users} label={t.dashboard.students} />
+                <NavItem to="/create-quiz" icon={PlusCircle} label={t.nav.create_quiz} />
+                <NavItem to="/quizzes" icon={List} label={t.nav.my_quizzes} />
+                <NavItem to="/students" icon={Users} label={t.nav.students} />
               </>
+            )}
+            {user?.role === UserRole.OWNER && (
+              <NavItem to="/admin" icon={Shield} label="Admin Dashboard" />
+            )}
+            {user?.role === UserRole.STUDENT && (
+              <NavItem to="/dashboard" icon={BookOpen} label={t.nav.my_quizzes} />
             )}
           </nav>
         </div>

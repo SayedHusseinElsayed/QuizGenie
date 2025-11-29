@@ -34,6 +34,16 @@ export const authService = {
           .single();
 
         if (profile) {
+          // Check if user is suspended
+          if (profile.is_suspended) {
+            await supabase.auth.signOut();
+            const reason = profile.suspension_reason || 'Please contact site admin for more information.';
+            return {
+              user: null,
+              error: `Your account has been suspended. ${reason}`
+            };
+          }
+
           return { user: { ...profile }, error: null };
         }
       }

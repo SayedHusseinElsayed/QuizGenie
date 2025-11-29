@@ -9,6 +9,7 @@ import QuizPlayer from './pages/QuizPlayer';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentProfile from './pages/StudentProfile';
 import StudentsList from './pages/StudentsList';
+import AdminDashboard from './pages/AdminDashboard';
 import Landing from './pages/Landing';
 import QuizzesList from './pages/QuizzesList';
 import QuizManager from './pages/QuizManager';
@@ -225,7 +226,8 @@ const App = () => {
             <Route path="/quizzes" element={user?.role === UserRole.TEACHER ? <QuizzesList /> : <Navigate to="/dashboard" />} />
             <Route path="/quiz-manager/:id" element={user?.role === UserRole.TEACHER ? <QuizManager /> : <Navigate to="/dashboard" />} />
             <Route path="/students" element={user?.role === UserRole.TEACHER ? <StudentsList /> : <Navigate to="/dashboard" />} />
-            <Route path="/student/:studentId" element={user?.role === UserRole.TEACHER ? <StudentProfile /> : <Navigate to="/dashboard" />} />
+            <Route path="/students" element={user?.role === UserRole.TEACHER ? <StudentsList /> : <Navigate to="/dashboard" />} />
+            <Route path="/admin" element={user?.role === UserRole.OWNER ? <AdminDashboard /> : <Navigate to="/dashboard" />} />
             <Route path="/support" element={user?.role === UserRole.TEACHER ? <Support /> : <Navigate to="/dashboard" />} />
             <Route path="/quiz/:id" element={<QuizPlayer />} />
           </Route>
