@@ -114,6 +114,37 @@ const StudentsList = () => {
         }
     };
 
+    const handleDeleteClick = (student: StudentData) => {
+        setStudentToDelete(student);
+        setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!studentToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await dbService.deleteStudent(studentToDelete.id);
+
+            // Remove from local state
+            setStudents(prev => prev.filter(s => s.id !== studentToDelete.id));
+
+            // Remove from localStorage if pending
+            const pendingStudents = JSON.parse(localStorage.getItem('pending_students') || '[]');
+            const updated = pendingStudents.filter((s: any) => s.email !== studentToDelete.email);
+            localStorage.setItem('pending_students', JSON.stringify(updated));
+
+            setShowDeleteModal(false);
+            setStudentToDelete(null);
+            alert('Student deleted successfully');
+        } catch (error) {
+            console.error('Error deleting student:', error);
+            alert('Failed to delete student. Please try again.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     useEffect(() => {
         loadStudents();
     }, [user]);

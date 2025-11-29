@@ -238,6 +238,7 @@ const App = () => {
             <Route path="/students" element={user?.role === UserRole.TEACHER ? <StudentsList /> : <Navigate to="/dashboard" />} />
             <Route path="/admin" element={user?.role === UserRole.OWNER ? <AdminDashboard /> : <Navigate to="/dashboard" />} />
             <Route path="/support" element={user?.role === UserRole.TEACHER ? <Support /> : <Navigate to="/dashboard" />} />
+            <Route path="/student/:id" element={user?.role === UserRole.TEACHER ? <StudentProfile /> : <Navigate to="/dashboard" />} />
             <Route path="/quiz/:id" element={<QuizPlayer />} />
           </Route>
 
