@@ -218,10 +218,19 @@ const App = () => {
           <Route path="/" element={!user ? <Landing /> : <Navigate to="/dashboard" />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
           <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/dashboard" />} />
-          <Route path="/share/:id" element={<PublicQuizIntro />} />
+          <Route path="/share/:quizId" element={<PublicQuizIntro />} />
 
           <Route element={<Layout />}>
-            <Route path="/dashboard" element={user ? (user.role === UserRole.TEACHER ? <Dashboard /> : <StudentDashboard />) : <Navigate to="/" />} />
+            <Route
+              path="/dashboard"
+              element={
+                user?.role === UserRole.OWNER
+                  ? <Navigate to="/admin" replace />
+                  : user?.role === UserRole.TEACHER
+                    ? <Dashboard />
+                    : <StudentDashboard />
+              }
+            />
             <Route path="/create-quiz" element={user?.role === UserRole.TEACHER ? <QuizCreator /> : <Navigate to="/dashboard" />} />
             <Route path="/quizzes" element={user?.role === UserRole.TEACHER ? <QuizzesList /> : <Navigate to="/dashboard" />} />
             <Route path="/quiz-manager/:id" element={user?.role === UserRole.TEACHER ? <QuizManager /> : <Navigate to="/dashboard" />} />

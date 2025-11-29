@@ -910,6 +910,29 @@ export const dbService = {
       console.error('Error in getTeacherStudents:', e);
       return [];
     }
+  },
+
+  // Delete student (and all related data)
+  deleteStudent: async (studentId: string): Promise<void> => {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Supabase not configured');
+    }
+
+    try {
+      // Delete student profile (CASCADE should handle related data)
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', studentId);
+
+      if (error) {
+        console.error('Error deleting student:', error);
+        throw new Error('Failed to delete student');
+      }
+    } catch (e) {
+      console.error('Error in deleteStudent:', e);
+      throw e;
+    }
   }
 };
 

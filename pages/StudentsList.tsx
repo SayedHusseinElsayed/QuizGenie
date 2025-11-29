@@ -1,19 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useApp } from '../App';
-import { dbService } from '../services/dbService';
-import { Submission, Quiz } from '../types';
-import { Users, Search, TrendingUp, TrendingDown, Mail, FileText, Award, ArrowRight, UserPlus, X } from 'lucide-react';
-
-interface StudentData {
-    id: string;
-    name: string;
-    email: string;
-    totalQuizzes: number;
-    completedQuizzes: number;
-    averageScore: number;
-    lastActivity: Date;
-    isPending?: boolean;
+email: string;
+totalQuizzes: number;
+completedQuizzes: number;
+averageScore: number;
+lastActivity: Date;
+isPending ?: boolean;
 }
 
 const StudentsList = () => {
@@ -35,6 +25,11 @@ const StudentsList = () => {
     const [newStudentNotes, setNewStudentNotes] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formError, setFormError] = useState('');
+
+    // Delete Student Modal
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [studentToDelete, setStudentToDelete] = useState<StudentData | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleAddStudent = async () => {
         // Validate form
@@ -106,6 +101,37 @@ const StudentsList = () => {
             setFormError(t.messages.error.add_student_failed);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteClick = (student: StudentData) => {
+        setStudentToDelete(student);
+        setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!studentToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await dbService.deleteStudent(studentToDelete.id);
+
+            // Remove from local state
+            setStudents(prev => prev.filter(s => s.id !== studentToDelete.id));
+
+            // Remove from localStorage if pending
+            const pendingStudents = JSON.parse(localStorage.getItem('pending_students') || '[]');
+            const updated = pendingStudents.filter((s: any) => s.email !== studentToDelete.email);
+            localStorage.setItem('pending_students', JSON.stringify(updated));
+
+            setShowDeleteModal(false);
+            setStudentToDelete(null);
+            alert('Student deleted successfully');
+        } catch (error) {
+            console.error('Error deleting student:', error);
+            alert('Failed to delete student. Please try again.');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -511,16 +537,27 @@ const StudentsList = () => {
                                             {student.lastActivity.toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigate(`/student/${student.id}`);
-                                                }}
-                                                className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 font-semibold text-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                {t.students_list.view_profile}
-                                                <ArrowRight size={16} />
-                                            </button>
+                                            <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/student/${student.id}`);
+                                                    }}
+                                                    className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 font-semibold text-sm"
+                                                >
+                                                    {t.students_list.view_profile}
+                                                    <ArrowRight size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteClick(student);
+                                                    }}
+                                                    className="text-red-600 hover:text-red-800 font-semibold text-sm"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -725,6 +762,68 @@ const StudentsList = () => {
                     </div>
                 )
             }
+
+            {/* Delete Student Confirmation Modal */}
+            {showDeleteModal && studentToDelete && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                <AlertTriangle className="text-red-600" size={24} />
+                                Delete Student
+                            </h3>
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                className="text-slate-400 hover:text-slate-600"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="mb-6">
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                <p className="text-sm text-red-800 font-semibold mb-2">⚠️ Warning: This action cannot be undone!</p>
+                                <p className="text-sm text-red-700">
+                                    Deleting this student will permanently remove:
+                                </p>
+                                <ul className="text-sm text-red-700 mt-2 ml-4 list-disc">
+                                    <li>All quiz submissions</li>
+                                    <li>Performance history</li>
+                                    <li>Student profile data</li>
+                                    <li>All related records</li>
+                                </ul>
+                            </div>
+
+                            <div className="mb-4">
+                                <p className="text-sm font-semibold text-slate-700 mb-1">Student:</p>
+                                <p className="text-slate-900 font-medium">{studentToDelete.name}</p>
+                                <p className="text-sm text-slate-500">{studentToDelete.email}</p>
+                            </div>
+
+                            <p className="text-sm text-slate-600">
+                                Are you sure you want to delete this student? This will remove all their data from the system.
+                            </p>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition"
+                                disabled={isDeleting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteConfirm}
+                                disabled={isDeleting}
+                                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition disabled:opacity-50"
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete Student'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
