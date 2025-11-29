@@ -909,72 +909,42 @@ const QuizCreator = () => {
               </div>
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={loading || (!topic && files.length === 0) || getTotalQuestions() === 0}
-            className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-          >
-            <Sparkles size={20} className="text-yellow-400" />
-            {t.quiz_creator.generate_btn} ({getTotalQuestions()} Qs)
-          </button>
-        </div>
-
-        {/* Right Config Column - Types */}
-        <div className="space-y-4">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full">
-            <h2 className="text-lg font-bold mb-4 text-slate-800">{t.quiz_creator.config_section}</h2>
-
-            <div className="space-y-3">
-              {Object.values(QuestionType).map((type) => (
-                <div key={type} className={`p-3 rounded-xl border transition-all duration-200 ${typeConfigs[type] !== undefined ? 'border-primary-500 bg-primary-50/30' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-3 cursor-pointer select-none w-full">
-                      <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${typeConfigs[type] !== undefined ? 'bg-primary-600 border-primary-600' : 'border-slate-300 bg-white'}`}>
-                        {typeConfigs[type] !== undefined && <Check size={14} className="text-white" />}
-                        <input
-                          type="checkbox"
-                          checked={typeConfigs[type] !== undefined}
-                          onChange={() => handleTypeToggle(type)}
-                          className="hidden"
-                        />
-                      </div>
-                      <span className={`text-sm font-semibold flex-1 ${typeConfigs[type] !== undefined ? 'text-primary-900' : 'text-slate-600'}`}>
-                        {t.quiz_creator.types[type]}
-                      </span>
-                    </label>
-                  </div>
-
-                  {typeConfigs[type] !== undefined && (
-                    <div className="mt-3 pl-8 flex items-center gap-3 animate-in slide-in-from-top-1">
-                      <label className="text-xs font-bold text-slate-400 uppercase">Count</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="20"
-                        value={typeConfigs[type]}
-                        onChange={(e) => handleTypeCountChange(type, parseInt(e.target.value))}
-                        className="w-20 border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary-200 outline-none bg-white"
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        onSuccess={() => {
-          setShowPaymentModal(false);
-          handleGenerate(); // Retry generation after upgrade
-        }}
-      />
     </div>
+
+      {/* Generate Button - Outside grid so it appears after all fields on mobile */ }
+  <button
+    type="button"
+    onClick={(e) => {
+      e.preventDefault();
+      console.log('Generate button clicked!', {
+        loading,
+        topic,
+        filesCount: files.length,
+        totalQuestions: getTotalQuestions(),
+        disabled: loading || (!topic && files.length === 0) || getTotalQuestions() === 0
+      });
+      handleGenerate();
+    }}
+    disabled={loading || (!topic && files.length === 0) || getTotalQuestions() === 0}
+    className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 active:bg-slate-700 transition shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation select-none"
+    style={{ WebkitTapHighlightColor: 'transparent' }}
+  >
+    <Sparkles size={20} className="text-yellow-400" />
+    {t.quiz_creator.generate_btn} ({getTotalQuestions()} Qs)
+  </button>
+
+  {/* Payment Modal */ }
+  <PaymentModal
+    isOpen={showPaymentModal}
+    onClose={() => setShowPaymentModal(false)}
+    onSuccess={() => {
+      setShowPaymentModal(false);
+      handleGenerate(); // Retry generation after upgrade
+    }}
+  />
+    </div >
   );
 };
 
