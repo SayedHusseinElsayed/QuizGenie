@@ -911,9 +911,10 @@ const QuizCreator = () => {
           </div>
 
           <button
+            type="button"
             onClick={handleGenerate}
             disabled={loading || (!topic && files.length === 0) || getTotalQuestions() === 0}
-            className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
+            className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           >
             <Sparkles size={20} className="text-yellow-400" />
             {t.quiz_creator.generate_btn} ({getTotalQuestions()} Qs)
