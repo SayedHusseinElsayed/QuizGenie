@@ -22,6 +22,12 @@ export interface User {
   subscription_status?: 'active' | 'canceled' | 'past_due';
   quizzes_created_this_month?: number;
   billing_cycle_start?: string;
+  // Student details
+  mobile_number?: string;
+  parent_name?: string;
+  parent_phone?: string;
+  address?: string;
+  notes?: string;
 }
 
 export enum QuestionType {

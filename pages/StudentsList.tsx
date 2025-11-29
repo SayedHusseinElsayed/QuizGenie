@@ -28,6 +28,11 @@ const StudentsList = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [newStudentEmail, setNewStudentEmail] = useState('');
     const [newStudentName, setNewStudentName] = useState('');
+    const [newStudentMobile, setNewStudentMobile] = useState('');
+    const [newStudentParentName, setNewStudentParentName] = useState('');
+    const [newStudentParentPhone, setNewStudentParentPhone] = useState('');
+    const [newStudentAddress, setNewStudentAddress] = useState('');
+    const [newStudentNotes, setNewStudentNotes] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formError, setFormError] = useState('');
 
@@ -75,6 +80,11 @@ const StudentsList = () => {
             pendingStudents.push({
                 email: newStudent.email,
                 name: newStudent.name,
+                mobile_number: newStudentMobile.trim(),
+                parent_name: newStudentParentName.trim(),
+                parent_phone: newStudentParentPhone.trim(),
+                address: newStudentAddress.trim(),
+                notes: newStudentNotes.trim(),
                 addedAt: new Date().toISOString(),
                 teacherId: user?.id
             });
@@ -83,6 +93,11 @@ const StudentsList = () => {
             // Reset form and close modal
             setNewStudentEmail('');
             setNewStudentName('');
+            setNewStudentMobile('');
+            setNewStudentParentName('');
+            setNewStudentParentPhone('');
+            setNewStudentAddress('');
+            setNewStudentNotes('');
             setShowAddModal(false);
 
             alert(t.messages.success.student_added);
@@ -528,66 +543,13 @@ const StudentsList = () => {
             {
                 showAddModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                                    <UserPlus size={24} className="text-primary-600" />
-                                    {t.students_list.add_modal_title}
-                                </h2>
-                                <button
-                                    onClick={() => {
-                                        setShowAddModal(false);
-                                        setNewStudentEmail('');
-                                        setNewStudentName('');
-                                        setFormError('');
-                                    }}
-                                    className="text-slate-400 hover:text-slate-600 transition"
-                                >
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        {t.students_list.student_email} <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={newStudentEmail}
-                                        onChange={(e) => setNewStudentEmail(e.target.value)}
-                                        placeholder="student@example.com"
-                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        disabled={isSubmitting}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        {t.students_list.full_name} <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newStudentName}
-                                        onChange={(e) => setNewStudentName(e.target.value)}
-                                        placeholder="John Doe"
-                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        disabled={isSubmitting}
-                                    />
-                                </div>
-
-                                {formError && (
-                                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                                        {formError}
-                                    </div>
-                                )}
-
-                                <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
-                                    <p className="font-semibold mb-1">{t.students_list.note}</p>
-                                    <p>{t.students_list.pending_note}</p>
-                                </div>
-
-                                <div className="flex gap-3 pt-2">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="sticky top-0 bg-white p-6 border-b border-slate-200 rounded-t-2xl z-10">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                                        <UserPlus size={24} className="text-primary-600" />
+                                        {t.students_list.add_modal_title}
+                                    </h2>
                                     <button
                                         onClick={() => {
                                             setShowAddModal(false);
@@ -595,25 +557,175 @@ const StudentsList = () => {
                                             setNewStudentName('');
                                             setFormError('');
                                         }}
-                                        className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition"
-                                        disabled={isSubmitting}
+                                        className="text-slate-400 hover:text-slate-600 transition"
                                     >
-                                        {t.common.cancel}
+                                        <X size={24} />
                                     </button>
-                                    <button
-                                        onClick={handleAddStudent}
-                                        disabled={isSubmitting}
-                                        className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {isSubmitting ? t.students_list.adding : t.students_list.add_student}
-                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="p-6">
+                                <div className="space-y-6">
+                                    {/* Student Information Section */}
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Student Information</h4>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                                    {t.students_list.full_name} <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={newStudentName}
+                                                    onChange={(e) => setNewStudentName(e.target.value)}
+                                                    placeholder="John Doe"
+                                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                                    {t.students_list.student_email} <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    value={newStudentEmail}
+                                                    onChange={(e) => setNewStudentEmail(e.target.value)}
+                                                    placeholder="student@example.com"
+                                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                                    Mobile Number
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    value={newStudentMobile}
+                                                    onChange={(e) => setNewStudentMobile(e.target.value)}
+                                                    placeholder="+1 (555) 123-4567"
+                                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Parent/Guardian Section */}
+                                    <div className="border-t border-slate-200 pt-6">
+                                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Parent/Guardian Information</h4>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                                    Parent Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={newStudentParentName}
+                                                    onChange={(e) => setNewStudentParentName(e.target.value)}
+                                                    placeholder="Jane Doe"
+                                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                                    Parent Phone
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    value={newStudentParentPhone}
+                                                    onChange={(e) => setNewStudentParentPhone(e.target.value)}
+                                                    placeholder="+1 (555) 987-6543"
+                                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Additional Information Section */}
+                                    <div className="border-t border-slate-200 pt-6">
+                                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Additional Information</h4>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                                    Address
+                                                </label>
+                                                <textarea
+                                                    value={newStudentAddress}
+                                                    onChange={(e) => setNewStudentAddress(e.target.value)}
+                                                    placeholder="123 Main St, City, State, ZIP"
+                                                    rows={2}
+                                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                                    Notes
+                                                </label>
+                                                <textarea
+                                                    value={newStudentNotes}
+                                                    onChange={(e) => setNewStudentNotes(e.target.value)}
+                                                    placeholder="Any additional notes about the student..."
+                                                    rows={3}
+                                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {formError && (
+                                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                                            {formError}
+                                        </div>
+                                    )}
+
+                                    <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+                                        <p className="font-semibold mb-1">{t.students_list.note}</p>
+                                        <p>{t.students_list.pending_note}</p>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-2">
+                                        <button
+                                            onClick={() => {
+                                                setShowAddModal(false);
+                                                setNewStudentEmail('');
+                                                setNewStudentName('');
+                                                setNewStudentMobile('');
+                                                setNewStudentParentName('');
+                                                setNewStudentParentPhone('');
+                                                setNewStudentAddress('');
+                                                setNewStudentNotes('');
+                                                setFormError('');
+                                            }}
+                                            className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition"
+                                            disabled={isSubmitting}
+                                        >
+                                            {t.common.cancel}
+                                        </button>
+                                        <button
+                                            onClick={handleAddStudent}
+                                            disabled={isSubmitting}
+                                            className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isSubmitting ? t.students_list.adding : t.students_list.add_student}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )
             }
-        </div >
+        </div>
     );
 };
 
