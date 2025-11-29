@@ -200,6 +200,8 @@ const App = () => {
     // Always clear user state and localStorage
     setUser(null);
     localStorage.removeItem('qura_user');
+    // Navigate to landing page
+    window.location.hash = '#/';
   };
 
   if (loadingAuth) {
