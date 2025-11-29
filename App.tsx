@@ -196,10 +196,10 @@ const App = () => {
   const logout = async () => {
     if (isSupabaseConfigured && supabase) {
       await supabase.auth.signOut();
-    } else {
-      setUser(null);
-      localStorage.removeItem('qura_user');
     }
+    // Always clear user state and localStorage
+    setUser(null);
+    localStorage.removeItem('qura_user');
   };
 
   if (loadingAuth) {
